@@ -1,0 +1,5 @@
+name: PlayerDataDeleter
+version: ${project.version}
+main: me.robertlit.playerdatadeleter.PlayerDataDeleter
+api-version: 1.16
+authors: [robertlit]
