@@ -1,11 +1,12 @@
 package me.robertlit.playerdatadeleter;
 
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.io.File;
 
 public final class PlayerDataDeleter extends JavaPlugin implements Listener {
 
@@ -15,19 +16,25 @@ public final class PlayerDataDeleter extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void onLogin(AsyncPlayerPreLoginEvent event) {
-        File playerDataFolder = new File(getDataFolder() + File.separator + ".." + File.separator + ".." + File.separator + "world" + File.separator + "playerdata");
-        if (!playerDataFolder.exists()) {
-            return;
+    public void onJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+
+        player.teleport(player.getWorld().getSpawnLocation());
+
+        player.getInventory().clear();
+
+        for (Attribute attribute : Attribute.values()) {
+            AttributeInstance instance = player.getAttribute(attribute);
+            if (instance == null) {
+                continue;
+            }
+            instance.setBaseValue(instance.getDefaultValue());
+
+            instance.getModifiers().forEach(instance::removeModifier);
         }
-        String fileName = playerDataFolder + File.separator + event.getUniqueId();
-        File playerData = new File(fileName + ".dat");
-        if (playerData.exists()) {
-            playerData.delete();
-        }
-        File playerDataOld = new File(fileName + ".dat_old");
-        if (playerDataOld.exists()) {
-            playerDataOld.delete();
-        }
+
+        player.getScoreboardTags().forEach(player::removeScoreboardTag);
+
+        player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getDefaultValue());
     }
 }
